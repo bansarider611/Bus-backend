@@ -8,7 +8,8 @@ const db = mysql.createConnection({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "BOOKING",
-  port: 3306, // 👈 explicitly added, sometimes required on Windows
+   port: process.env.DB_PORT,
+
   insecureAuth: true, // 👈 this allows legacy password handling
 });
 
