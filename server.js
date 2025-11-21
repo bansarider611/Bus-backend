@@ -31,6 +31,8 @@ app.use("/api/trip", tripRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/contact", require("./routes/contact"));
+
 
 // ======= TEST ROUTES =======
 app.get("/", (req, res) => {

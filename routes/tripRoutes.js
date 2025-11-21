@@ -24,13 +24,13 @@ router.get("/all", async (req, res) => {
         R.\`From\` AS START_CITY,
         R.\`To\` AS END_CITY,
         R.DISTANCE_KM,
-        T.DEPARTURE_TS,
-        T.ARRIVAL_TS,
-        T.PRICE                      -- ✅ PRICE ADDED
+        T.DEPARTURE_DATETIME,
+        T.ARRIVAL_DATETIME,
+        T.PRICE
       FROM TRIPS T
       JOIN BUSES B ON T.BUS_ID = B.ID
       JOIN ROUTES R ON T.ROUTE_ID = R.ID
-      ORDER BY T.DEPARTURE_TS ASC
+      ORDER BY T.DEPARTURE_DATETIME ASC
     `);
 
     res.json({ success: true, total: rows.length, trips: rows });
@@ -45,12 +45,12 @@ router.get("/all", async (req, res) => {
 // ===============================
 router.get("/search", async (req, res) => {
   try {
-    const { from, to } = req.query;
-
-    if (!from || !to) {
+    const { from, to, date } = req.query;
+     console.log("Search Input:", from, to, date);
+    if (!from || !to || !date) {
       return res.status(400).json({
         success: false,
-        message: "Both 'from' and 'to' parameters are required.",
+        message: "from, to and date are required.",
       });
     }
 
@@ -62,23 +62,24 @@ router.get("/search", async (req, res) => {
         R.\`From\` AS START_CITY,
         R.\`To\` AS END_CITY,
         R.DISTANCE_KM,
-        T.DEPARTURE_TS,
-        T.ARRIVAL_TS,
-        T.PRICE                      -- ✅ PRICE ADDED
+        T.DEPARTURE_DATETIME,
+        T.ARRIVAL_DATETIME,
+        T.PRICE
       FROM TRIPS T
       JOIN BUSES B ON T.BUS_ID = B.ID
       JOIN ROUTES R ON T.ROUTE_ID = R.ID
       WHERE LOWER(R.\`From\`) = LOWER(?) 
         AND LOWER(R.\`To\`) = LOWER(?)
-      ORDER BY T.DEPARTURE_TS ASC
+        AND DATE(T.DEPARTURE_DATETIME) = ?
+      ORDER BY T.DEPARTURE_DATETIME ASC
       `,
-      [from, to]
+      [from, to, date]
     );
 
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `No trips found from ${from} to ${to}.`,
+        message: `No trips found from ${from} to ${to} on ${date}.`,
       });
     }
 
@@ -106,9 +107,9 @@ router.get("/:id", async (req, res) => {
         R.\`From\` AS START_CITY,
         R.\`To\` AS END_CITY,
         R.DISTANCE_KM,
-        T.DEPARTURE_TS,
-        T.ARRIVAL_TS,
-        T.PRICE                       -- ✅ PRICE ADDED
+        T.DEPARTURE_DATETIME,
+        T.ARRIVAL_DATETIME,
+        T.PRICE
       FROM TRIPS T
       JOIN BUSES B ON T.BUS_ID = B.ID
       JOIN ROUTES R ON T.ROUTE_ID = R.ID
@@ -131,7 +132,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // ===============================
-// 🟢 Add New Trip (Supports PRICE)
+// 🟢 Add New Trip
 // ===============================
 router.post("/add", authMiddleware, async (req, res) => {
   try {
@@ -145,7 +146,7 @@ router.post("/add", authMiddleware, async (req, res) => {
     }
 
     await db.promise().query(
-      "INSERT INTO TRIPS (BUS_ID, ROUTE_ID, DEPARTURE_TS, ARRIVAL_TS, PRICE) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO TRIPS (BUS_ID, ROUTE_ID, DEPARTURE_DATETIME, ARRIVAL_DATETIME, PRICE) VALUES (?, ?, ?, ?, ?)",
       [bus_id, route_id, departure_ts, arrival_ts, price]
     );
 

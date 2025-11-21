@@ -85,8 +85,8 @@ router.get("/user/:userId", (req, res) => {
       bus.NAME AS BUS_NAME,
       r.\`From\` AS FROM_CITY,
       r.\`To\` AS TO_CITY,
-      t.DEPARTURE_TS,
-      t.ARRIVAL_TS,
+      t.DEPARTURE_DATETIME AS DEPARTURE_TS,
+      t.ARRIVAL_DATETIME AS ARRIVAL_TS,
       GROUP_CONCAT(bs.SEAT_NO ORDER BY bs.SEAT_NO ASC) AS SEATS
     FROM BOOKING b
     JOIN TRIPS t ON b.TRIP_ID = t.ID
